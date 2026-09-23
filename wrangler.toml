@@ -12,6 +12,8 @@ database_id = "58a6c274-c0f4-43b6-be2f-b91fac8f8de8"
 
 # Secrets (set in Cloudflare dashboard > Settings > Variables and Secrets):
 #   STUDIO_PASSWORD  - required, your login password
-#   GEMINI_API_KEY   - optional, better writing quality (free tier)
+#   GEMINI_API_KEY   - optional, better writing quality (free tier); required for Video
+#   AGENT_KEY        - optional, a separate key so Claude (or another script) can call
+#                      the /api/* endpoints directly without ever using your real password
 [vars]
 GEMINI_MODEL = "gemini-2.5-flash"

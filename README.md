@@ -28,3 +28,11 @@ roughly 1-3 minutes to render; the "Fast" quality option is cheaper and quicker 
 Pick who you're working on in the sidebar ("Working on"). Writing, images and the planner all follow it.
 Edit or add clients under the Brands tab. MidCoast Web Co, Dan Amato Landscapes, On-The-Go Auto Repairs
 and Cape Hawke Game Fishing Club are preloaded.
+
+## Agent access
+Every `/api/*` request needs the value in `STUDIO_PASSWORD`, sent as an `x-studio-key` header — that's
+what protects your AI quota from being used by anyone who finds the link. If you also set `AGENT_KEY`
+(Secret, any random string — never reuse your real password here), that value is accepted too, on
+every endpoint. This lets an assistant like Claude call `/api/write`, `/api/image`, `/api/video`,
+`/api/posts` etc. directly, without you ever handing over your actual login password. Only set this
+if you actually want an agent calling the API on your behalf; leave it unset otherwise.
