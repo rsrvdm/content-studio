@@ -1,6 +1,6 @@
 # Studio — content desk for MidCoast Web Co, clients and projects
 
-Write posts/scripts/blogs, generate images, and plan your posting calendar.
+Write posts/scripts/blogs, generate images and video, and plan your posting calendar.
 Runs on Cloudflare Pages (free). Database "content-studio" (D1) is already created.
 
 ## Deploy (about 10 minutes)
@@ -16,6 +16,13 @@ Runs on Cloudflare Pages (free). Database "content-studio" (D1) is already creat
 Bindings (AI + D1) come from wrangler.toml automatically.
 Without a Gemini key, writing uses Cloudflare's built-in model (free daily allowance).
 Images always use Cloudflare's FLUX model (free daily allowance).
+
+## Video
+Video uses Google Veo through the Gemini API and needs `GEMINI_API_KEY` set. Unlike text and images,
+**Veo is not on the Gemini free tier** — the Google Cloud project behind your API key needs billing
+enabled, and each clip costs a small amount (Veo is priced per second of video). Check
+https://ai.google.dev/gemini-api/docs/pricing before generating a lot of clips. Each video takes
+roughly 1-3 minutes to render; the "Fast" quality option is cheaper and quicker than "Higher quality".
 
 ## Brands
 Pick who you're working on in the sidebar ("Working on"). Writing, images and the planner all follow it.

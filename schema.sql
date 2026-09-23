@@ -18,3 +18,6 @@ CREATE TABLE IF NOT EXISTS brands (
   notes TEXT DEFAULT '', created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 ALTER TABLE posts ADD COLUMN brand_id INTEGER;
+
+-- Added for video generation (Veo):
+ALTER TABLE posts ADD COLUMN video TEXT;

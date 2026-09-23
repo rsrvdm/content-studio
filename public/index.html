@@ -62,7 +62,7 @@ textarea{resize:vertical;min-height:90px}
 .canvas{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-lg);min-height:360px;padding:24px;display:flex;flex-direction:column;gap:16px}
 .canvas .empty{margin:auto;color:var(--muted);text-align:center;max-width:32ch}
 .output{white-space:pre-wrap;flex:1;border:0;background:none;padding:0;min-height:280px;font-size:16px}
-.canvas img{width:100%;border-radius:var(--radius-sm);display:block}
+.canvas img,.canvas video{width:100%;border-radius:var(--radius-sm);display:block}
 .meta{font-size:13px;color:var(--muted)}
 .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 
@@ -72,7 +72,7 @@ textarea{resize:vertical;min-height:90px}
 
 .day{margin:28px 0 10px;font-size:20px;font-weight:700}
 .post{display:grid;grid-template-columns:96px 1fr auto;gap:16px;padding:16px 0;border-top:1px solid var(--line);align-items:start}
-.post img,.post .noimg{width:96px;height:96px;object-fit:cover;border-radius:var(--radius-sm);background:var(--kelp-soft)}
+.post img,.post video,.post .noimg{width:96px;height:96px;object-fit:cover;border-radius:var(--radius-sm);background:var(--kelp-soft)}
 .post p{margin:4px 0 0;white-space:pre-wrap;max-height:7.5em;overflow:hidden}
 .post.posted{opacity:.5}
 .chip{display:inline-block;font-size:13px;font-weight:600;padding:2px 10px;border-radius:999px;background:var(--kelp-soft);color:var(--kelp)}
@@ -92,7 +92,7 @@ textarea{resize:vertical;min-height:90px}
   nav{flex-direction:row;border-right:0;border-bottom:1px solid var(--line);padding:12px;overflow-x:auto;position:sticky;top:env(safe-area-inset-top,0px);background:var(--paper);z-index:2}
   .brand{display:none}.lock{margin:0 0 0 auto}
   .work{grid-template-columns:1fr}
-  .post{grid-template-columns:64px 1fr}.post img,.post .noimg{width:64px;height:64px}
+  .post{grid-template-columns:64px 1fr}.post img,.post video,.post .noimg{width:64px;height:64px}
   .post .actions{grid-column:1/-1;flex-direction:row}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -115,6 +115,7 @@ textarea{resize:vertical;min-height:90px}
     <label class="switch"><span>Working on</span><select id="brandSel" aria-label="Working on"></select></label>
     <button class="tab" role="tab" data-view="write" aria-selected="true">Write</button>
     <button class="tab" role="tab" data-view="image" aria-selected="false">Images</button>
+    <button class="tab" role="tab" data-view="video" aria-selected="false">Video</button>
     <button class="tab" role="tab" data-view="plan" aria-selected="false">Planner</button>
     <button class="tab" role="tab" data-view="brands" aria-selected="false">Brands</button>
     <button class="lock" id="lockBtn">Lock</button>
@@ -181,6 +182,37 @@ textarea{resize:vertical;min-height:90px}
             <button class="ghost" id="iSend">Add to planner</button>
           </div>
           <div class="sendbox" id="iSendBox"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIDEO -->
+    <section class="view" id="view-video" hidden>
+      <h2>Video</h2>
+      <p class="lede">Describe the video, or animate the image you last made. Uses Google Veo — needs a Gemini API key with billing enabled (it's not part of the free tier), and each clip takes roughly 1-3 minutes.</p>
+      <div class="work">
+        <form class="controls" id="vidForm">
+          <label>Describe the video<textarea id="vPrompt" placeholder="e.g. A mobile mechanic's ute driving along a coastal road at sunrise, cinematic" required></textarea></label>
+          <label class="check"><input type="checkbox" id="vFromImage"> Animate my last image instead of starting from nothing</label>
+          <label class="check"><input type="checkbox" id="vColours"> Use brand colours</label>
+          <div class="row">
+            <label>Quality<select id="vModel">
+              <option value="fast">Fast</option><option value="quality">Higher quality (slower)</option>
+            </select></label>
+            <label>Shape<select id="vAspect">
+              <option value="16:9">Landscape (16:9)</option><option value="9:16">Vertical (9:16)</option>
+            </select></label>
+          </div>
+          <button class="go" id="vGo">Make video</button>
+        </form>
+        <div class="canvas" id="vCanvas">
+          <p class="empty" id="vEmpty">Your video appears here.</p>
+          <video id="vOut" controls hidden></video>
+          <div class="actions" id="vActions" hidden>
+            <a class="ghost" id="vDownload" download="studio-video.mp4">Download</a>
+            <button class="ghost" id="vSend">Add to planner</button>
+          </div>
+          <div class="sendbox" id="vSendBox"></div>
         </div>
       </div>
     </section>
@@ -297,7 +329,7 @@ function localNowPlus(hours=1){
   const p = n => String(n).padStart(2,"0");
   return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:00`;
 }
-function openSendBox(box, getCaption, image, platformDefault=""){
+function openSendBox(box, getCaption, image, platformDefault="", video){
   if (box.classList.contains("open")) { box.classList.remove("open"); return; }
   box.innerHTML = `
     ${getCaption === null ? '<label style="flex-basis:100%">Caption<textarea class="sbCaption" required></textarea></label>' : ""}
@@ -311,6 +343,7 @@ function openSendBox(box, getCaption, image, platformDefault=""){
     try {
       await api("posts", { method:"POST", body: JSON.stringify({
         platform: box.querySelector(".sbPlat").value, caption, image: image ? image() : null,
+        video: video ? video() : null,
         scheduled_at: box.querySelector(".sbWhen").value, brand_id: brandId })});
       box.classList.remove("open"); toast("Scheduled"); loadPosts();
     } catch(err){ if(err.message!=="locked") toast(err.message); }
@@ -346,6 +379,34 @@ $("imgForm").onsubmit = async (e) => {
 };
 $("iSend").onclick = () => openSendBox($("iSendBox"), null, () => lastImage, "Instagram");
 
+/* ---- video ---- */
+let lastVideo = null;
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+$("vidForm").onsubmit = async (e) => {
+  e.preventDefault(); const btn=$("vGo"); btn.disabled=true; btn.textContent="Starting…";
+  try {
+    const start = await api("video", { method:"POST", body: JSON.stringify({
+      prompt:$("vPrompt").value, brand_id: brandId, useColours: $("vColours").checked,
+      image: $("vFromImage").checked ? lastImage : null,
+      model: $("vModel").value, aspectRatio: $("vAspect").value })});
+    btn.textContent = "Generating… (1-3 min)";
+    let done = false, tries = 0;
+    while (!done && tries < 90) {
+      await sleep(4000); tries++;
+      const s = await api("video-status", { method:"POST", body: JSON.stringify({ operation: start.operation })});
+      if (s.error) { toast(s.error); done = true; break; }
+      if (s.done) {
+        done = true; lastVideo = s.video; $("vEmpty").hidden=true;
+        $("vOut").src = s.video; $("vOut").hidden=false;
+        $("vDownload").href = s.video; $("vActions").hidden=false;
+      }
+    }
+    if (!done) toast("Still going — Gemini is taking longer than usual. Try again shortly.");
+  } catch(err){ if(err.message!=="locked") toast(err.message); }
+  btn.disabled=false; btn.textContent="Make video";
+};
+$("vSend").onclick = () => openSendBox($("vSendBox"), null, null, "TikTok", () => lastVideo);
+
 /* ---- planner ---- */
 let posts = [];
 $("pNew").onclick = () => openSendBox($("pSendBox"), null, null, "Facebook");
@@ -367,14 +428,14 @@ function render(){
     if (day !== lastDay){ html += `<h3 class="day">${day}</h3>`; lastDay = day; }
     const due = p.status !== "posted" && when <= now;
     html += `<article class="post ${p.status==="posted"?"posted":""}">
-      ${p.image ? `<img src="${p.image}" alt="">` : '<div class="noimg"></div>'}
+      ${p.video ? `<video src="${p.video}" muted></video>` : p.image ? `<img src="${p.image}" alt="">` : '<div class="noimg"></div>'}
       <div>
         <span class="chip ${due?"due":""}">${all && p.brand_name ? esc(p.brand_name)+" · " : ""}${esc(p.platform)} · ${when.toLocaleTimeString("en-AU",{hour:"numeric",minute:"2-digit"})}${due?" · due now":""}${p.status==="posted"?" · posted":""}</span>
         <p>${esc(p.caption)}</p>
       </div>
       <div class="actions">
         <button class="ghost" data-a="copy" data-id="${p.id}">Copy caption</button>
-        ${p.image ? `<a class="ghost" href="${p.image}" download="post-${p.id}.jpg">Download image</a>` : ""}
+        ${p.video ? `<a class="ghost" href="${p.video}" download="post-${p.id}.mp4">Download video</a>` : p.image ? `<a class="ghost" href="${p.image}" download="post-${p.id}.jpg">Download image</a>` : ""}
         ${p.status!=="posted" ? `<button class="ghost" data-a="done" data-id="${p.id}">Mark posted</button>` : ""}
         <button class="ghost danger" data-a="del" data-id="${p.id}">Delete</button>
       </div></article>`;
