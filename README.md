@@ -24,6 +24,34 @@ enabled, and each clip costs a small amount (Veo is priced per second of video).
 https://ai.google.dev/gemini-api/docs/pricing before generating a lot of clips. Each video takes
 roughly 1-3 minutes to render; the "Fast" quality option is cheaper and quicker than "Higher quality".
 
+## Model routing
+The Write tab doesn't always use the same model. Quick, low-stakes formats (a social caption,
+a review reply, SEO meta tags) run on `GEMINI_FAST_MODEL` — free. Longer or more structured
+formats (a blog post, a local service page, a video script) run on real Claude
+(`ANTHROPIC_API_KEY` + `CLAUDE_MODEL`) when that key is set, so the writing that actually
+matters gets the better model. A "Quality" dropdown on the Write tab lets you force fast or
+best on any single request instead of leaving it on auto.
+
+**Setting up the Claude tier (optional, costs real money — separate from your claude.ai
+subscription):**
+1. Get a key at https://console.anthropic.com/settings/keys (this is pay-as-you-go API
+   billing, a different account/product from your Claude.ai chat subscription — one doesn't
+   substitute for the other).
+2. Before you use it, cap it: console.anthropic.com > Settings > Billing > Limits > set a
+   monthly spend limit (e.g. $30). Once that's spent, Claude calls just fail with a clear
+   error instead of ever going over — Studio falls back to Gemini automatically if the key
+   is missing entirely, but not mid-month if you hit the cap, so set it before you rely on it.
+3. Add `ANTHROPIC_API_KEY` as a Secret in Cloudflare (Settings > Variables and Secrets), then
+   Deployments > Retry deployment.
+
+Leave `ANTHROPIC_API_KEY` unset to keep everything on Gemini's free tier — nothing else
+changes, premium formats just fall back to `GEMINI_PREMIUM_MODEL` instead.
+
+Separately: if you're hitting usage limits while chatting with Claude directly (not inside
+Studio), that's your claude.ai/Cowork subscription's own session and weekly caps — check
+Settings > Usage in the Claude app, and a higher-tier plan (Max) raises that ceiling. This
+`ANTHROPIC_API_KEY` here has no effect on that at all; it only powers Studio's own Write tab.
+
 ## Brands
 Pick who you're working on in the sidebar ("Working on"). Writing, images and the planner all follow it.
 Edit or add clients under the Brands tab. MidCoast Web Co, Dan Amato Landscapes, On-The-Go Auto Repairs

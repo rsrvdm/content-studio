@@ -15,6 +15,43 @@ const FORMATS = {
   email: "a marketing email with a subject line, preview text, and body.",
 };
 
+// Which formats are quick/low-stakes (cheap, fast model) vs longer/structured (better model).
+// "auto" picks from this table; the person can still override with the Quality selector.
+const FORMAT_TIER = {
+  social: "fast", gbp: "fast", review: "fast", meta: "fast", pitch: "fast", ad: "fast",
+  webpage: "premium", service: "premium", blog: "premium", casestudy: "premium", script: "premium", email: "premium",
+};
+
+function pickTier(format, quality) {
+  if (quality === "fast" || quality === "best") return quality === "best" ? "premium" : "fast";
+  return FORMAT_TIER[format] || "fast";
+}
+
+async function callClaude(env, prompt) {
+  const model = env.CLAUDE_MODEL || "claude-sonnet-5";
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-api-key": env.ANTHROPIC_API_KEY,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 4000,
+      messages: [{ role: "user", content: prompt }],
+    }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const msg = data.error?.message || `Claude returned ${res.status}`;
+    const hint = res.status === 400 && /credit balance|billing/i.test(msg)
+      ? " Add credit at console.anthropic.com/settings/billing, or lower the spend cap if this is expected." : "";
+    throw new Error(`Claude: ${msg}${hint}`);
+  }
+  return (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("");
+}
+
 function brandBrief(b) {
   if (!b) return "";
   const lines = [
@@ -32,7 +69,7 @@ function brandBrief(b) {
 }
 
 export async function onRequestPost({ request, env }) {
-  const { format = "social", topic = "", tone = "", platform = "", notes = "", brand_id = null } = await request.json();
+  const { format = "social", topic = "", tone = "", platform = "", notes = "", brand_id = null, quality = "auto" } = await request.json();
   if (!topic.trim()) return json({ error: "Add a topic first." }, 400);
 
   const brand = brand_id
@@ -50,9 +87,22 @@ export async function onRequestPost({ request, env }) {
     "Use Australian English. Avoid generic AI-sounding phrasing. Return only the finished content, with no preamble.",
   ].filter((x) => x !== false && x !== undefined).join("\n");
 
-  let text;
-  if (env.GEMINI_API_KEY) {
-    const model = env.GEMINI_MODEL || "gemini-2.5-flash";
+  const tier = pickTier(format, quality);
+  let text, engine;
+
+  if (tier === "premium" && env.ANTHROPIC_API_KEY) {
+    // Premium-tier writing (blogs, service pages, scripts...) gets the best model, on its
+    // own capped budget - see ANTHROPIC_API_KEY / spend limit in the README.
+    try {
+      text = await callClaude(env, prompt);
+      engine = "Claude (premium)";
+    } catch (err) {
+      return json({ error: err.message }, 502);
+    }
+  } else if (env.GEMINI_API_KEY) {
+    const model = tier === "premium"
+      ? (env.GEMINI_PREMIUM_MODEL || "gemini-2.5-pro")
+      : (env.GEMINI_FAST_MODEL || env.GEMINI_MODEL || "gemini-2.5-flash");
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
       {
@@ -64,12 +114,14 @@ export async function onRequestPost({ request, env }) {
     const data = await res.json();
     if (!res.ok) return json({ error: `Gemini: ${data.error?.message || res.status}` }, 502);
     text = data.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") || "";
+    engine = tier === "premium" ? "Gemini (premium)" : "Gemini (fast)";
   } else {
     const out = await env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast", {
       messages: [{ role: "user", content: prompt }],
       max_tokens: 2000,
     });
     text = out.response || "";
+    engine = "Cloudflare AI (free)";
   }
-  return json({ text: text.trim(), engine: env.GEMINI_API_KEY ? "Gemini" : "Cloudflare AI" });
+  return json({ text: text.trim(), engine });
 }

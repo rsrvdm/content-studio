@@ -11,9 +11,23 @@ database_name = "content-studio"
 database_id = "58a6c274-c0f4-43b6-be2f-b91fac8f8de8"
 
 # Secrets (set in Cloudflare dashboard > Settings > Variables and Secrets):
-#   STUDIO_PASSWORD  - required, your login password
-#   GEMINI_API_KEY   - optional, better writing quality (free tier); required for Video
-#   AGENT_KEY        - optional, a separate key so Claude (or another script) can call
-#                      the /api/* endpoints directly without ever using your real password
+#   STUDIO_PASSWORD    - required, your login password
+#   GEMINI_API_KEY     - optional, better writing quality (free tier); required for Video
+#   AGENT_KEY          - optional, a separate key so Claude (or another script) can call
+#                        the /api/* endpoints directly without ever using your real password
+#   ANTHROPIC_API_KEY  - optional, upgrades premium-tier writing to real Claude models.
+#                        Get one at console.anthropic.com (separate, pay-as-you-go billing -
+#                        NOT the same as a claude.ai subscription). Set a monthly spend limit
+#                        under Settings > Billing > Limits in that console (e.g. $30) so this
+#                        can never run past what you're happy spending. See README > Model
+#                        routing. Leave unset to keep everything on Gemini's free tier.
+#
+# Model routing (Write tab): quick, low-stakes formats (social posts, review replies, meta
+# tags) use GEMINI_FAST_MODEL. Longer/structured formats (blog posts, service pages, scripts)
+# use ANTHROPIC_API_KEY + CLAUDE_MODEL when that key is set, otherwise fall back to
+# GEMINI_PREMIUM_MODEL. Override the Quality dropdown in Studio itself to force fast/best on
+# any single request.
 [vars]
-GEMINI_MODEL = "gemini-2.5-flash"
+GEMINI_FAST_MODEL = "gemini-2.5-flash"
+GEMINI_PREMIUM_MODEL = "gemini-2.5-pro"
+CLAUDE_MODEL = "claude-sonnet-5"

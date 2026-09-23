@@ -141,6 +141,11 @@ textarea{resize:vertical;min-height:90px}
               <option>educational</option><option>funny</option>
             </select></label>
           </div>
+          <label>Quality<select id="wQuality">
+            <option value="auto">Auto (fast for quick stuff, better model for longer pieces)</option>
+            <option value="fast">Always fast</option>
+            <option value="best">Always best quality</option>
+          </select></label>
           <label>Platform<select id="wPlatform">
             <option value="">Any</option><option>Facebook</option><option>Instagram</option>
             <option>TikTok</option><option>YouTube</option><option>LinkedIn</option>
@@ -357,7 +362,8 @@ $("writeForm").onsubmit = async (e) => {
   try {
     const d = await api("write", { method:"POST", body: JSON.stringify({
       topic:$("wTopic").value, format:$("wFormat").value, tone:$("wTone").value,
-      platform:$("wPlatform").value, notes:$("wNotes").value, brand_id: brandId })});
+      platform:$("wPlatform").value, notes:$("wNotes").value, brand_id: brandId,
+      quality:$("wQuality").value })});
     $("wEmpty").hidden=true; $("wOut").hidden=false; $("wActions").hidden=false;
     $("wOut").value = d.text; $("wMeta").textContent = `For ${brands.find(b=>b.id===brandId)?.name || "no brand"}, written with ${d.engine}`;
   } catch(err){ if(err.message!=="locked") toast(err.message); }
