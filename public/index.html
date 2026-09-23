@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EEF2EF; --panel:#F8FAF8; --ink:#1B2A33; --muted:#5C6B70;
+  --kelp:#2F6B5A; --kelp-soft:#DCE8E2; --buoy:#E0612B; --line:#C9D3CF; --danger:#B3261E;
+  --radius-lg:18px; --radius-sm:8px;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){ :root{
+  --paper:#12191D; --panel:#1A2328; --ink:#E4ECE8; --muted:#94A5A0;
+  --kelp:#6FB59C; --kelp-soft:#22332E; --buoy:#F07A45; --line:#2C3A3F; --danger:#F2867E;
+}}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0;background:var(--paper);color:var(--ink)}
+body{font:16px/1.55 Figtree,system-ui,sans-serif;min-height:100vh}
+h1,h2,h3{font-family:"Bricolage Grotesque",Figtree,sans-serif;line-height:1.1;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--buoy);outline-offset:2px}
+
+.shell{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+nav{padding:28px 18px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.brand{font-family:"Bricolage Grotesque";font-weight:700;font-size:30px;letter-spacing:-.02em;margin:0 10px 26px}
+.brand small{display:block;font:500 13px Figtree;color:var(--muted);letter-spacing:0}
+.tab{all:unset;cursor:pointer;padding:10px 12px;border-radius:var(--radius-sm);font-weight:500;color:var(--muted)}
+.tab[aria-selected="true"]{background:var(--kelp-soft);color:var(--ink)}
+.tab:focus-visible{outline:3px solid var(--buoy)}
+.switch{margin:0 10px 18px;font-size:13px;font-weight:600;color:var(--muted)}
+.switch select{margin-top:6px;width:100%;font-weight:600;color:var(--ink);border-color:var(--kelp)}
+.brandlist{display:flex;flex-direction:column;gap:2px}
+.bitem{all:unset;cursor:pointer;padding:12px 14px;border-radius:var(--radius-sm);display:flex;justify-content:space-between;gap:10px}
+.bitem:hover,.bitem[aria-current="true"]{background:var(--kelp-soft)}
+.bitem small{color:var(--muted)}
+.check{flex-direction:row;align-items:center;gap:8px;font-weight:500}
+.lock{margin-top:auto;all:unset;cursor:pointer;color:var(--muted);font-size:14px;padding:10px 12px}
+
+main{padding:40px clamp(20px,5vw,64px);max-width:1100px;width:100%}
+.view[hidden]{display:none}
+.view h2{font-size:clamp(34px,5vw,52px);font-weight:700;letter-spacing:-.03em;margin-bottom:8px}
+.lede{color:var(--muted);margin:0 0 28px;max-width:60ch}
+
+.work{display:grid;grid-template-columns:minmax(260px,360px) 1fr;gap:28px;align-items:start}
+.controls{display:flex;flex-direction:column;gap:16px}
+label{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600}
+input,select,textarea{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-sm);padding:10px 12px;font-weight:400;font-size:16px}
+textarea{resize:vertical;min-height:90px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>label{flex:1;min-width:130px}
+.go{background:var(--buoy);color:#fff;border:0;border-radius:999px;padding:13px 22px;font-weight:600;cursor:pointer}
+.go:disabled{opacity:.55;cursor:wait}
+.ghost{background:none;border:1px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer;font-size:14px}
+.ghost.danger{color:var(--danger)}
+
+.canvas{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-lg);min-height:360px;padding:24px;display:flex;flex-direction:column;gap:16px}
+.canvas .empty{margin:auto;color:var(--muted);text-align:center;max-width:32ch}
+.output{white-space:pre-wrap;flex:1;border:0;background:none;padding:0;min-height:280px;font-size:16px}
+.canvas img{width:100%;border-radius:var(--radius-sm);display:block}
+.meta{font-size:13px;color:var(--muted)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+.sendbox{border-top:1px solid var(--line);padding-top:14px;display:none;gap:10px;flex-wrap:wrap;align-items:end}
+.sendbox.open{display:flex}
+.sendbox label{flex:1;min-width:150px}
+
+.day{margin:28px 0 10px;font-size:20px;font-weight:700}
+.post{display:grid;grid-template-columns:96px 1fr auto;gap:16px;padding:16px 0;border-top:1px solid var(--line);align-items:start}
+.post img,.post .noimg{width:96px;height:96px;object-fit:cover;border-radius:var(--radius-sm);background:var(--kelp-soft)}
+.post p{margin:4px 0 0;white-space:pre-wrap;max-height:7.5em;overflow:hidden}
+.post.posted{opacity:.5}
+.chip{display:inline-block;font-size:13px;font-weight:600;padding:2px 10px;border-radius:999px;background:var(--kelp-soft);color:var(--kelp)}
+.chip.due{background:var(--buoy);color:#fff}
+.post .actions{flex-direction:column;align-items:stretch}
+
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:999px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+
+#gate{position:fixed;inset:0;background:var(--paper);display:grid;place-items:center;padding:24px}
+#gate form{width:min(380px,100%);display:flex;flex-direction:column;gap:14px}
+#gate h1{font-size:44px;letter-spacing:-.03em}
+
+@media (max-width:820px){
+  .switch{margin:0;min-width:180px}.switch span{display:none}.switch select{margin:0}
+  .shell{grid-template-columns:1fr}
+  nav{flex-direction:row;border-right:0;border-bottom:1px solid var(--line);padding:12px;overflow-x:auto;position:sticky;top:env(safe-area-inset-top,0px);background:var(--paper);z-index:2}
+  .brand{display:none}.lock{margin:0 0 0 auto}
+  .work{grid-template-columns:1fr}
+  .post{grid-template-columns:64px 1fr}.post img,.post .noimg{width:64px;height:64px}
+  .post .actions{grid-column:1/-1;flex-direction:row}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div id="gate" hidden>
+  <form id="gateForm">
+    <h1>Studio</h1>
+    <label>Password<input type="password" id="pw" autocomplete="current-password" required></label>
+    <button class="go">Open studio</button>
+    <span class="meta" id="gateMsg"></span>
+  </form>
+</div>
+
+<div class="shell">
+  <nav role="tablist" aria-label="Tools">
+    <div class="brand">Studio<small>MidCoast Web Co desk</small></div>
+    <label class="switch"><span>Working on</span><select id="brandSel" aria-label="Working on"></select></label>
+    <button class="tab" role="tab" data-view="write" aria-selected="true">Write</button>
+    <button class="tab" role="tab" data-view="image" aria-selected="false">Images</button>
+    <button class="tab" role="tab" data-view="plan" aria-selected="false">Planner</button>
+    <button class="tab" role="tab" data-view="brands" aria-selected="false">Brands</button>
+    <button class="lock" id="lockBtn">Lock</button>
+  </nav>
+
+  <main>
+    <!-- WRITE -->
+    <section class="view" id="view-write">
+      <h2>Write</h2>
+      <p class="lede">Posts, video scripts, blogs, ads and emails. Edit the result right in the box, then copy it or send it to the planner.</p>
+      <div class="work">
+        <form class="controls" id="writeForm">
+          <label>What should it be about?<textarea id="wTopic" placeholder="e.g. Why local tradies lose jobs without a Google Business Profile. For a review reply, paste the review here." required></textarea></label>
+          <div class="row">
+            <label>Format<select id="wFormat">
+              <optgroup label="Social"><option value="social">Social post</option><option value="casestudy">Project before/after</option><option value="script">Video script</option><option value="ad">Ad copy</option></optgroup>
+              <optgroup label="Google &amp; websites"><option value="gbp">Google Business update</option><option value="webpage">Website page copy</option><option value="service">Local service page</option><option value="meta">SEO titles &amp; descriptions</option><option value="blog">Blog post</option></optgroup>
+              <optgroup label="Messages"><option value="review">Reply to a review</option><option value="pitch">Outreach to a business</option><option value="email">Email</option></optgroup>
+            </select></label>
+            <label>Tone<select id="wTone">
+              <option value="">Brand voice</option><option>friendly</option><option>professional</option><option>bold and punchy</option>
+              <option>educational</option><option>funny</option>
+            </select></label>
+          </div>
+          <label>Platform<select id="wPlatform">
+            <option value="">Any</option><option>Facebook</option><option>Instagram</option>
+            <option>TikTok</option><option>YouTube</option><option>LinkedIn</option>
+          </select></label>
+          <label>Anything else? <textarea id="wNotes" placeholder="Customer name, suburb, job details, keep it under 100 words…"></textarea></label>
+          <button class="go" id="wGo">Write it</button>
+        </form>
+        <div class="canvas" id="wCanvas">
+          <p class="empty" id="wEmpty">Your draft appears here.</p>
+          <textarea class="output" id="wOut" hidden aria-label="Draft"></textarea>
+          <div class="actions" id="wActions" hidden>
+            <button class="ghost" id="wCopy">Copy</button>
+            <button class="ghost" id="wSend">Add to planner</button>
+            <span class="meta" id="wMeta"></span>
+          </div>
+          <div class="sendbox" id="wSendBox"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- IMAGE -->
+    <section class="view" id="view-image" hidden>
+      <h2>Images</h2>
+      <p class="lede">Describe what you want to see. The more specific you are about subject, setting and light, the better it looks.</p>
+      <div class="work">
+        <form class="controls" id="imgForm">
+          <label>Describe the image<textarea id="iPrompt" placeholder="e.g. A mobile mechanic's ute parked by the Tuncurry breakwall at sunrise" required></textarea></label>
+          <label>Style<select id="iStyle">
+            <option value="">No preference</option><option>realistic photo</option><option>clean flat illustration</option>
+            <option>bold poster graphic</option><option>watercolour</option><option>3D render</option>
+          </select></label>
+          <label class="check"><input type="checkbox" id="iColours"> Use brand colours</label>
+          <button class="go" id="iGo">Make image</button>
+        </form>
+        <div class="canvas" id="iCanvas">
+          <p class="empty" id="iEmpty">Your image appears here. Each one takes about 5–15 seconds.</p>
+          <img id="iOut" alt="" hidden>
+          <div class="actions" id="iActions" hidden>
+            <a class="ghost" id="iDownload" download="studio-image.jpg">Download</a>
+            <button class="ghost" id="iSend">Add to planner</button>
+          </div>
+          <div class="sendbox" id="iSendBox"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PLAN -->
+    <section class="view" id="view-plan" hidden>
+      <h2>Planner</h2>
+      <p class="lede">Everything you've lined up to post. When a post is due, copy the caption, download the image, post it, then mark it posted.</p>
+      <div class="actions"><button class="ghost" id="pNew">New post</button><label style="flex-direction:row;align-items:center;font-weight:500"><input type="checkbox" id="pShowDone"> Show posted</label><label class="check"><input type="checkbox" id="pAll"> All brands</label></div>
+      <div class="sendbox" id="pSendBox"></div>
+      <div id="pList"></div>
+    </section>
+    <!-- BRANDS -->
+    <section class="view" id="view-brands" hidden>
+      <h2>Brands</h2>
+      <p class="lede">Your business, your clients and your own projects. Whatever you pick in "Working on" is used for every piece of writing, so fill in as much as you know.</p>
+      <div class="work">
+        <div><div class="brandlist" id="bList"></div><button class="ghost" id="bNew" style="margin-top:14px">Add a brand</button></div>
+        <form class="canvas" id="bForm">
+          <div class="row"><label>Name<input id="b_name" required></label>
+            <label>Type<select id="b_kind"><option value="business">My business</option><option value="client">Client</option><option value="project">Personal project</option></select></label></div>
+          <div class="row"><label>Website<input id="b_website"></label><label>Service area<input id="b_area"></label></div>
+          <label>Who are the customers?<input id="b_audience"></label>
+          <label>What they offer<textarea id="b_services"></textarea></label>
+          <label>How it should sound<textarea id="b_voice"></textarea></label>
+          <label>Words to never use<input id="b_avoid"></label>
+          <div class="row"><label>Colours<input id="b_colours"></label><label>Hashtags<input id="b_hashtags"></label></div>
+          <label>Anything else worth knowing<textarea id="b_notes"></textarea></label>
+          <div class="actions"><button class="go" id="bSave">Save brand</button><button type="button" class="ghost danger" id="bDel">Delete</button></div>
+        </form>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let key = "", brands = [], brandId = null;
+try { brandId = Number(localStorage.getItem("studioBrand")) || null; } catch {}
+try { key = localStorage.getItem("studioKey") || ""; } catch {}
+
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("show"),2400); }
+
+async function api(path, opts = {}){
+  const res = await fetch("/api/" + path, {
+    ...opts,
+    headers: { "content-type": "application/json", "x-studio-key": key, ...(opts.headers||{}) },
+  });
+  const data = await res.json().catch(() => ({ error: "Unexpected server response." }));
+  if (res.status === 401) { showGate("Wrong password."); throw new Error("locked"); }
+  if (!res.ok) throw new Error(data.error || "Request failed");
+  return data;
+}
+
+/* ---- gate ---- */
+function showGate(msg=""){ $("gate").hidden=false; $("gateMsg").textContent=msg; $("pw").focus(); }
+$("gateForm").onsubmit = async (e) => {
+  e.preventDefault(); key = $("pw").value;
+  try { await api("posts"); try{localStorage.setItem("studioKey",key);}catch{} $("gate").hidden=true; await loadBrands(); loadPosts(); }
+  catch(err){ if(err.message!=="locked") $("gateMsg").textContent = err.message; }
+};
+$("lockBtn").onclick = () => { key=""; try{localStorage.removeItem("studioKey");}catch{} showGate(); };
+
+/* ---- tabs ---- */
+document.querySelectorAll(".tab").forEach(tab => tab.onclick = () => {
+  document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", t===tab));
+  document.querySelectorAll(".view").forEach(v => v.hidden = v.id !== "view-" + tab.dataset.view);
+  if (tab.dataset.view === "plan") loadPosts();
+});
+
+/* ---- brands ---- */
+const BF = ["name","kind","website","area","audience","services","voice","avoid","colours","hashtags","notes"];
+let editing = null;
+async function loadBrands(){
+  brands = (await api("brands")).brands;
+  if (!brands.find(b => b.id === brandId)) brandId = brands[0]?.id ?? null;
+  const groups = {business:"My business", client:"Clients", project:"Personal projects"};
+  $("brandSel").innerHTML = Object.entries(groups).map(([k,label]) => {
+    const items = brands.filter(b => b.kind === k); if (!items.length) return "";
+    return `<optgroup label="${label}">${items.map(b=>`<option value="${b.id}" ${b.id===brandId?"selected":""}>${esc(b.name)}</option>`).join("")}</optgroup>`;
+  }).join("");
+  renderBrandList();
+}
+$("brandSel").onchange = () => { brandId = Number($("brandSel").value); try{localStorage.setItem("studioBrand",brandId);}catch{} editing = null; renderBrandList(); render(); };
+function renderBrandList(){
+  const kinds = {business:"My business", client:"Client", project:"Project"};
+  $("bList").innerHTML = brands.map(b => `<button class="bitem" data-id="${b.id}" aria-current="${b.id===(editing?.id ?? brandId)}"><span>${esc(b.name)}</span><small>${kinds[b.kind]||""}</small></button>`).join("");
+  fillBrandForm(editing ?? brands.find(b => b.id === brandId) ?? null);
+}
+function fillBrandForm(b){
+  editing = b; BF.forEach(f => $("b_"+f).value = b ? (b[f] ?? "") : (f==="kind" ? "client" : ""));
+  $("bDel").hidden = !b;
+}
+$("bList").onclick = (e) => { const it = e.target.closest(".bitem"); if (!it) return; editing = brands.find(b => b.id == it.dataset.id); renderBrandList(); };
+$("bNew").onclick = () => { fillBrandForm(null); $("b_name").focus(); };
+$("bForm").onsubmit = async (e) => {
+  e.preventDefault(); const body = {}; BF.forEach(f => body[f] = $("b_"+f).value);
+  try {
+    const d = editing ? await api("brands/"+editing.id,{method:"PATCH",body:JSON.stringify(body)}) : await api("brands",{method:"POST",body:JSON.stringify(body)});
+    editing = d.brand; toast("Brand saved"); await loadBrands();
+  } catch(err){ if(err.message!=="locked") toast(err.message); }
+};
+$("bDel").onclick = async () => {
+  if (!editing || !confirm(`Delete ${editing.name}? Its planned posts stay, without a brand.`)) return;
+  try { await api("brands/"+editing.id,{method:"DELETE"}); editing = null; toast("Brand deleted"); await loadBrands(); loadPosts(); }
+  catch(err){ if(err.message!=="locked") toast(err.message); }
+};
+
+/* ---- send-to-planner box (shared) ---- */
+function localNowPlus(hours=1){
+  const d = new Date(Date.now() + hours*3600e3); d.setMinutes(0,0,0);
+  const p = n => String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:00`;
+}
+function openSendBox(box, getCaption, image, platformDefault=""){
+  if (box.classList.contains("open")) { box.classList.remove("open"); return; }
+  box.innerHTML = `
+    ${getCaption === null ? '<label style="flex-basis:100%">Caption<textarea class="sbCaption" required></textarea></label>' : ""}
+    <label>Platform<select class="sbPlat">${["Facebook","Instagram","TikTok","YouTube","LinkedIn"].map(p=>`<option ${p===platformDefault?"selected":""}>${p}</option>`).join("")}</select></label>
+    <label>Post on<input type="datetime-local" class="sbWhen" value="${localNowPlus(24)}"></label>
+    <button class="go sbSave">Schedule</button>`;
+  box.classList.add("open");
+  box.querySelector(".sbSave").onclick = async () => {
+    const caption = getCaption ? getCaption() : box.querySelector(".sbCaption").value;
+    if (!caption.trim()) { toast("Add a caption first."); return; }
+    try {
+      await api("posts", { method:"POST", body: JSON.stringify({
+        platform: box.querySelector(".sbPlat").value, caption, image: image ? image() : null,
+        scheduled_at: box.querySelector(".sbWhen").value, brand_id: brandId })});
+      box.classList.remove("open"); toast("Scheduled"); loadPosts();
+    } catch(err){ if(err.message!=="locked") toast(err.message); }
+  };
+}
+
+/* ---- write ---- */
+$("writeForm").onsubmit = async (e) => {
+  e.preventDefault(); const btn=$("wGo"); btn.disabled=true; btn.textContent="Writing…";
+  try {
+    const d = await api("write", { method:"POST", body: JSON.stringify({
+      topic:$("wTopic").value, format:$("wFormat").value, tone:$("wTone").value,
+      platform:$("wPlatform").value, notes:$("wNotes").value, brand_id: brandId })});
+    $("wEmpty").hidden=true; $("wOut").hidden=false; $("wActions").hidden=false;
+    $("wOut").value = d.text; $("wMeta").textContent = `For ${brands.find(b=>b.id===brandId)?.name || "no brand"}, written with ${d.engine}`;
+  } catch(err){ if(err.message!=="locked") toast(err.message); }
+  btn.disabled=false; btn.textContent="Write it";
+};
+$("wCopy").onclick = async () => { await navigator.clipboard.writeText($("wOut").value); toast("Copied"); };
+$("wSend").onclick = () => openSendBox($("wSendBox"), () => $("wOut").value, null, $("wPlatform").value || "Facebook");
+
+/* ---- image ---- */
+let lastImage = null;
+$("imgForm").onsubmit = async (e) => {
+  e.preventDefault(); const btn=$("iGo"); btn.disabled=true; btn.textContent="Making…";
+  try {
+    const d = await api("image", { method:"POST", body: JSON.stringify({ prompt:$("iPrompt").value, style:$("iStyle").value, brand_id: brandId, useColours: $("iColours").checked })});
+    lastImage = d.image; $("iEmpty").hidden=true;
+    $("iOut").src = d.image; $("iOut").alt = $("iPrompt").value; $("iOut").hidden=false;
+    $("iDownload").href = d.image; $("iActions").hidden=false;
+  } catch(err){ if(err.message!=="locked") toast(err.message); }
+  btn.disabled=false; btn.textContent="Make image";
+};
+$("iSend").onclick = () => openSendBox($("iSendBox"), null, () => lastImage, "Instagram");
+
+/* ---- planner ---- */
+let posts = [];
+$("pNew").onclick = () => openSendBox($("pSendBox"), null, null, "Facebook");
+$("pShowDone").onchange = render; $("pAll").onchange = render;
+
+async function loadPosts(){
+  try { posts = (await api("posts")).posts; render(); } catch {}
+}
+function esc(s){ return s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function render(){
+  const list = $("pList"), showDone = $("pShowDone").checked;
+  const all = $("pAll").checked;
+  const shown = posts.filter(p => (showDone || p.status !== "posted") && (all || p.brand_id === brandId));
+  if (!shown.length){ list.innerHTML = '<p class="lede" style="margin-top:28px">Nothing scheduled. Write something or make an image, then add it to the planner.</p>'; return; }
+  const now = new Date(); let html = "", lastDay = "";
+  for (const p of shown){
+    const when = new Date(p.scheduled_at);
+    const day = when.toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"long"});
+    if (day !== lastDay){ html += `<h3 class="day">${day}</h3>`; lastDay = day; }
+    const due = p.status !== "posted" && when <= now;
+    html += `<article class="post ${p.status==="posted"?"posted":""}">
+      ${p.image ? `<img src="${p.image}" alt="">` : '<div class="noimg"></div>'}
+      <div>
+        <span class="chip ${due?"due":""}">${all && p.brand_name ? esc(p.brand_name)+" · " : ""}${esc(p.platform)} · ${when.toLocaleTimeString("en-AU",{hour:"numeric",minute:"2-digit"})}${due?" · due now":""}${p.status==="posted"?" · posted":""}</span>
+        <p>${esc(p.caption)}</p>
+      </div>
+      <div class="actions">
+        <button class="ghost" data-a="copy" data-id="${p.id}">Copy caption</button>
+        ${p.image ? `<a class="ghost" href="${p.image}" download="post-${p.id}.jpg">Download image</a>` : ""}
+        ${p.status!=="posted" ? `<button class="ghost" data-a="done" data-id="${p.id}">Mark posted</button>` : ""}
+        <button class="ghost danger" data-a="del" data-id="${p.id}">Delete</button>
+      </div></article>`;
+  }
+  list.innerHTML = html;
+}
+$("pList").onclick = async (e) => {
+  const b = e.target.closest("button[data-a]"); if (!b) return;
+  const p = posts.find(x => String(x.id) === b.dataset.id);
+  try {
+    if (b.dataset.a === "copy"){ await navigator.clipboard.writeText(p.caption); toast("Copied"); }
+    if (b.dataset.a === "done"){ await api("posts/"+p.id,{method:"PATCH",body:JSON.stringify({status:"posted"})}); toast("Marked posted"); loadPosts(); }
+    if (b.dataset.a === "del" && confirm("Delete this post?")){ await api("posts/"+p.id,{method:"DELETE"}); toast("Deleted"); loadPosts(); }
+  } catch(err){ if(err.message!=="locked") toast(err.message); }
+};
+
+/* ---- start ---- */
+if (key) loadBrands().then(loadPosts).catch(()=>{});
+else showGate();
+</script>
+</body>
+</html>

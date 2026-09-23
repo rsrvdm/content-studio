@@ -1,0 +1,17 @@
+name = "content-studio"
+pages_build_output_dir = "public"
+compatibility_date = "2026-09-01"
+
+[ai]
+binding = "AI"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "content-studio"
+database_id = "58a6c274-c0f4-43b6-be2f-b91fac8f8de8"
+
+# Secrets (set in Cloudflare dashboard > Settings > Variables and Secrets):
+#   STUDIO_PASSWORD  - required, your login password
+#   GEMINI_API_KEY   - optional, better writing quality (free tier)
+[vars]
+GEMINI_MODEL = "gemini-2.5-flash"
