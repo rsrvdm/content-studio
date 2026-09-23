@@ -18,7 +18,7 @@ database_id = "58a6c274-c0f4-43b6-be2f-b91fac8f8de8"
 #   ANTHROPIC_API_KEY  - optional, upgrades premium-tier writing to real Claude models.
 #                        Get one at console.anthropic.com (separate, pay-as-you-go billing -
 #                        NOT the same as a claude.ai subscription). Set a monthly spend limit
-#                        under Settings > Billing > Limits in that console (e.g. $30) so this
+#                        under Settings > Billing > Limits in that console (e.g. $10) so this
 #                        can never run past what you're happy spending. See README > Model
 #                        routing. Leave unset to keep everything on Gemini's free tier.
 #

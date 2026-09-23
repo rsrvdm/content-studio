@@ -38,7 +38,7 @@ subscription):**
    billing, a different account/product from your Claude.ai chat subscription — one doesn't
    substitute for the other).
 2. Before you use it, cap it: console.anthropic.com > Settings > Billing > Limits > set a
-   monthly spend limit (e.g. $30). Once that's spent, Claude calls just fail with a clear
+   monthly spend limit (e.g. $10). Once that's spent, Claude calls just fail with a clear
    error instead of ever going over — Studio falls back to Gemini automatically if the key
    is missing entirely, but not mid-month if you hit the cap, so set it before you rely on it.
 3. Add `ANTHROPIC_API_KEY` as a Secret in Cloudflare (Settings > Variables and Secrets), then
